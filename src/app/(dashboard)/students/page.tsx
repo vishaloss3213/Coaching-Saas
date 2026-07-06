@@ -40,7 +40,7 @@ export default async function StudentsPage() {
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {students.map((s) => (
                 <tr key={s.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
-                  <td className="px-4 py-3 font-medium">{s.full_name}</td>
+                  <td className="px-4 py-3 font-medium"><Link href={`/students/${s.id}`} className="hover:text-zinc-600 dark:hover:text-zinc-300">{s.full_name}</Link></td>
                   <td className="px-4 py-3 text-zinc-500">{s.phone || '—'}</td>
                   <td className="px-4 py-3 text-zinc-500">{s.parent_name || '—'}</td>
                   <td className="px-4 py-3">
