@@ -57,12 +57,20 @@ export default async function BatchDetailPage({
         <h2 className="text-lg font-semibold">
           Enrolled students ({enrolled.length})
         </h2>
-        <Link
-          href={`/batches/${id}/enroll`}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Enroll students
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/batches/${id}/generate-invoices`}
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          >
+            Generate invoices
+          </Link>
+          <Link
+            href={`/batches/${id}/enroll`}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Enroll students
+          </Link>
+        </div>
       </div>
 
       {enrolled.length === 0 ? (
