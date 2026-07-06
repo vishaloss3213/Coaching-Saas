@@ -63,7 +63,9 @@ export async function signup(_prev: ActionResult, formData: FormData): Promise<A
   redirect('/dashboard')
 }
 
-export async function login(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+type LoginResult = { error: string } | { success: true } | null
+
+export async function login(_prev: LoginResult, formData: FormData): Promise<LoginResult> {
   const supabase = await createClient()
 
   const email = formData.get('email') as string
@@ -73,8 +75,7 @@ export async function login(_prev: ActionResult, formData: FormData): Promise<Ac
 
   if (error) return { error: error.message }
 
-  revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  return { success: true }
 }
 
 export async function logout() {

@@ -1,14 +1,22 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { login } from '@/lib/auth/actions'
 
 export function LoginForm() {
+  const router = useRouter()
   const [state, action, pending] = useActionState(login, null)
+
+  useEffect(() => {
+    if (state && 'success' in state) {
+      router.push('/dashboard')
+    }
+  }, [state, router])
 
   return (
     <form action={action} className="space-y-4">
-      {state?.error && (
+      {state && 'error' in state && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
           {state.error}
         </p>
