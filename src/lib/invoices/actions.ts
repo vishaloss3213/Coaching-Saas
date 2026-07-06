@@ -90,7 +90,7 @@ export async function generateInvoices(_prev: ActionResult, formData: FormData):
 
   const planId = formData.get('fee_plan_id') as string
   const periodStart = formData.get('period_start') as string
-  const studentIds = formData.getAll('student_ids') as string[]
+  const studentIds = (formData.getAll('student_ids') as string[]).filter(Boolean)
 
   if (!planId || !periodStart || studentIds.length === 0) return { error: 'Plan, period, and students required' }
 

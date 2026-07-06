@@ -30,7 +30,6 @@ export function StudentSelect({ students, batches }: { students: Array<{ id: str
 
   return (
     <div>
-      <input type="hidden" name="student_ids" value="" />
       {selected.size > 0 && (
         <div className="mb-2">
           {Array.from(selected).map((id) => <input key={id} type="hidden" name="student_ids" value={id} />)}
