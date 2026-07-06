@@ -1,0 +1,191 @@
+-- ============================================================
+-- Migration 002: Row Level Security Policies
+-- Coaching Management SaaS
+--
+-- ** COMMENTED OUT BY DEFAULT **
+-- Uncomment and run this file AFTER authentication is implemented.
+-- Running it before auth will block ALL queries because there
+-- will be no authenticated user to evaluate policies against.
+-- ============================================================
+
+-- Uncomment this helper function and all policies below when
+-- authentication is working and users can log in.
+
+-- -- 6.1 Helper: get the current user's center_id
+-- CREATE OR REPLACE FUNCTION auth.current_center_id()
+-- RETURNS UUID
+-- LANGUAGE SQL
+-- STABLE
+-- AS $$
+--   SELECT center_id FROM public.profiles WHERE id = auth.uid()
+-- $$;
+
+-- -- 6.2 Enable RLS on all tables
+-- ALTER TABLE coaching_centers ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE profiles         ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE students         ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE teachers         ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE batches          ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE student_batches  ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE attendance_sessions ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE attendance_records  ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE fee_plans        ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE fee_invoices     ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE payments         ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE reminder_rules   ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE reminder_logs    ENABLE ROW LEVEL SECURITY;
+
+-- -- 6.3 RLS Policies
+-- -- coaching_centers: owner can see their center
+-- CREATE POLICY "centers_owner_select" ON coaching_centers
+--   FOR SELECT USING (owner_user_id = auth.uid());
+
+-- -- profiles: users see profiles in their own center; can update own profile
+-- CREATE POLICY "profiles_select" ON profiles
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "profiles_insert" ON profiles
+--   FOR INSERT WITH CHECK (id = auth.uid());
+-- CREATE POLICY "profiles_update" ON profiles
+--   FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+
+-- -- students: scoped by center
+-- CREATE POLICY "students_select" ON students
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "students_insert" ON students
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "students_update" ON students
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "students_delete" ON students
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- teachers: scoped by center
+-- CREATE POLICY "teachers_select" ON teachers
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "teachers_insert" ON teachers
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "teachers_update" ON teachers
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "teachers_delete" ON teachers
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- batches: scoped by center
+-- CREATE POLICY "batches_select" ON batches
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "batches_insert" ON batches
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "batches_update" ON batches
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "batches_delete" ON batches
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- student_batches: access via student's center
+-- CREATE POLICY "student_batches_select" ON student_batches
+--   FOR SELECT USING (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "student_batches_insert" ON student_batches
+--   FOR INSERT WITH CHECK (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "student_batches_update" ON student_batches
+--   FOR UPDATE USING (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "student_batches_delete" ON student_batches
+--   FOR DELETE USING (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+
+-- -- attendance_sessions: scoped by center
+-- CREATE POLICY "att_sessions_select" ON attendance_sessions
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "att_sessions_insert" ON attendance_sessions
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "att_sessions_update" ON attendance_sessions
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "att_sessions_delete" ON attendance_sessions
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- attendance_records: access via session's center
+-- CREATE POLICY "att_records_select" ON attendance_records
+--   FOR SELECT USING (
+--     EXISTS (SELECT 1 FROM attendance_sessions s WHERE s.id = session_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "att_records_insert" ON attendance_records
+--   FOR INSERT WITH CHECK (
+--     EXISTS (SELECT 1 FROM attendance_sessions s WHERE s.id = session_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "att_records_update" ON attendance_records
+--   FOR UPDATE USING (
+--     EXISTS (SELECT 1 FROM attendance_sessions s WHERE s.id = session_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "att_records_delete" ON attendance_records
+--   FOR DELETE USING (
+--     EXISTS (SELECT 1 FROM attendance_sessions s WHERE s.id = session_id AND s.center_id = auth.current_center_id())
+--   );
+
+-- -- fee_plans: scoped by center
+-- CREATE POLICY "fee_plans_select" ON fee_plans
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "fee_plans_insert" ON fee_plans
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "fee_plans_update" ON fee_plans
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "fee_plans_delete" ON fee_plans
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- fee_invoices: scoped by center
+-- CREATE POLICY "fee_invoices_select" ON fee_invoices
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "fee_invoices_insert" ON fee_invoices
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "fee_invoices_update" ON fee_invoices
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "fee_invoices_delete" ON fee_invoices
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- payments: access via invoice's center
+-- CREATE POLICY "payments_select" ON payments
+--   FOR SELECT USING (
+--     EXISTS (SELECT 1 FROM fee_invoices i WHERE i.id = invoice_id AND i.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "payments_insert" ON payments
+--   FOR INSERT WITH CHECK (
+--     EXISTS (SELECT 1 FROM fee_invoices i WHERE i.id = invoice_id AND i.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "payments_update" ON payments
+--   FOR UPDATE USING (
+--     EXISTS (SELECT 1 FROM fee_invoices i WHERE i.id = invoice_id AND i.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "payments_delete" ON payments
+--   FOR DELETE USING (
+--     EXISTS (SELECT 1 FROM fee_invoices i WHERE i.id = invoice_id AND i.center_id = auth.current_center_id())
+--   );
+
+-- -- reminder_rules: scoped by center
+-- CREATE POLICY "reminder_rules_select" ON reminder_rules
+--   FOR SELECT USING (center_id = auth.current_center_id());
+-- CREATE POLICY "reminder_rules_insert" ON reminder_rules
+--   FOR INSERT WITH CHECK (center_id = auth.current_center_id());
+-- CREATE POLICY "reminder_rules_update" ON reminder_rules
+--   FOR UPDATE USING (center_id = auth.current_center_id());
+-- CREATE POLICY "reminder_rules_delete" ON reminder_rules
+--   FOR DELETE USING (center_id = auth.current_center_id());
+
+-- -- reminder_logs: access via student's center
+-- CREATE POLICY "reminder_logs_select" ON reminder_logs
+--   FOR SELECT USING (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "reminder_logs_insert" ON reminder_logs
+--   FOR INSERT WITH CHECK (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "reminder_logs_update" ON reminder_logs
+--   FOR UPDATE USING (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
+-- CREATE POLICY "reminder_logs_delete" ON reminder_logs
+--   FOR DELETE USING (
+--     EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.center_id = auth.current_center_id())
+--   );
