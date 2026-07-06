@@ -66,16 +66,20 @@ export async function signup(_prev: ActionResult, formData: FormData): Promise<A
 type LoginResult = { error: string } | { success: true } | null
 
 export async function login(_prev: LoginResult, formData: FormData): Promise<LoginResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) return { error: error.message }
+    if (error) return { error: error.message }
 
-  return { success: true }
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Login failed' }
+  }
 }
 
 export async function logout() {
