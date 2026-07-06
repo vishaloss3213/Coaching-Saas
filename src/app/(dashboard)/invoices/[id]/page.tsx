@@ -19,7 +19,10 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-8">
-      <div><Link href="/invoices" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white">&larr; Back to invoices</Link><h1 className="mt-2 text-2xl font-bold">Invoice</h1></div>
+      <div className="flex items-start justify-between">
+        <div><Link href="/invoices" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white">&larr; Back to invoices</Link><h1 className="mt-2 text-2xl font-bold">Invoice</h1></div>
+        <Link href={`/invoices/${id}/receipt`} target="_blank" className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">Print receipt</Link>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-3 rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">

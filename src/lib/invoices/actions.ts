@@ -219,3 +219,29 @@ export async function generateBatchInvoices(_prev: ActionResult, formData: FormD
   redirect('/invoices')
   return null
 }
+
+export async function getInvoiceReceipt(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
+  if (!profile) redirect('/login')
+
+  const { data: center } = await supabase.from('coaching_centers').select('name, address, phone, email').eq('id', profile.center_id).single()
+
+  const { data: invoice } = await supabase
+    .from('fee_invoices')
+    .select('*, students(full_name, phone, parent_name, parent_phone), fee_plans(name, cycle_type, amount)')
+    .eq('id', id)
+    .single()
+
+  if (!invoice) redirect('/invoices')
+
+  const { data: payments } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('invoice_id', id)
+    .order('paid_at', { ascending: false })
+
+  return { invoice, payments: payments || [], center }
+}
