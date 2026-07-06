@@ -11,6 +11,8 @@ const navLinks = [
   { href: '/fee-plans', label: 'Fee Plans' },
   { href: '/invoices', label: 'Invoices' },
   { href: '/reminders', label: 'Reminders' },
+  { href: '/reports', label: 'Reports' },
+  { href: '/communication', label: 'Communication' },
 ]
 
 export default async function DashboardLayout({
