@@ -32,7 +32,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <BulkActionSection overdueInvoices={data.overdueInvoices as any} pendingInvoices={data.pendingInvoices as any} />
+      <BulkActionSection overdueInvoices={data.overdueInvoices as any} pendingInvoices={data.pendingInvoices as any} today={data.today} />
     </div>
   )
 }

@@ -6,7 +6,7 @@ import { bulkMarkOverdue, bulkSendReminders } from '@/lib/invoices/bulk-actions'
 
 type Invoice = { id: string; students: { full_name: string } | null; fee_plans: { name: string } | null; due_date: string; amount_due: number; amount_paid: number; status: string }
 
-export function BulkActionSection({ overdueInvoices, pendingInvoices }: { overdueInvoices: Invoice[]; pendingInvoices: Invoice[] }) {
+export function BulkActionSection({ overdueInvoices, pendingInvoices, today }: { overdueInvoices: Invoice[]; pendingInvoices: Invoice[]; today: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -37,7 +37,8 @@ export function BulkActionSection({ overdueInvoices, pendingInvoices }: { overdu
     router.refresh()
   }
 
-  const daysOverdue = (d: string) => Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 86400000))
+  const todayMs = new Date(today).getTime()
+  const daysOverdue = (d: string) => Math.max(0, Math.floor((todayMs - new Date(d).getTime()) / 86400000))
 
   return (
     <div className="space-y-3">
