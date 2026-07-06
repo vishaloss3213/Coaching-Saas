@@ -83,3 +83,27 @@ export async function logout() {
   revalidatePath('/', 'layout')
   redirect('/login')
 }
+
+export async function sendResetEmail(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+  })
+
+  if (error) return { error: error.message }
+  return null
+}
+
+export async function updatePassword(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const supabase = await createClient()
+  const password = formData.get('password') as string
+
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/', 'layout')
+  redirect('/dashboard')
+}
