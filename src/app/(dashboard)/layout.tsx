@@ -29,11 +29,13 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*, coaching_centers(name)')
-    .eq('id', user.id)
-    .single()
+  const { data: profile } = user
+    ? await supabase
+        .from('profiles')
+        .select('*, coaching_centers(name)')
+        .eq('id', user.id)
+        .single()
+    : { data: null }
 
   return (
     <div className="min-h-screen flex">
