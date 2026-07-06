@@ -6,6 +6,7 @@ import Link from 'next/link'
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/students', label: 'Students' },
+  { href: '/batches', label: 'Batches' },
 ]
 
 export default async function DashboardLayout({
