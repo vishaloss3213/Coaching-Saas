@@ -8,6 +8,9 @@ const navLinks = [
   { href: '/students', label: 'Students' },
   { href: '/batches', label: 'Batches' },
   { href: '/attendance', label: 'Attendance' },
+  { href: '/fee-plans', label: 'Fee Plans' },
+  { href: '/invoices', label: 'Invoices' },
+  { href: '/reminders', label: 'Reminders' },
 ]
 
 export default async function DashboardLayout({
