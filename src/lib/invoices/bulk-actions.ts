@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { ActionResult } from '@/lib/types'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 export async function bulkMarkOverdue(invoiceIds: string[]): Promise<ActionResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { error } = await supabase
     .from('fee_invoices')
     .update({ status: 'overdue' })
@@ -16,10 +18,16 @@ export async function bulkMarkOverdue(invoiceIds: string[]): Promise<ActionResul
   revalidatePath('/dashboard')
   revalidatePath('/invoices')
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'bulkMarkOverdue', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to mark overdue' }
+  }
 }
 
 export async function bulkSendReminders(invoiceIds: string[]): Promise<ActionResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -59,4 +67,9 @@ export async function bulkSendReminders(invoiceIds: string[]): Promise<ActionRes
   revalidatePath('/dashboard')
   revalidatePath('/invoices')
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'bulkSendReminders', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send reminders' }
+  }
 }

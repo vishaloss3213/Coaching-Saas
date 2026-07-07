@@ -1,5 +1,6 @@
 import { getInvoiceReceipt } from '@/lib/invoices/actions'
 import { notFound } from 'next/navigation'
+import { PrintButton } from './print-button'
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -12,7 +13,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   return (
     <div>
       <div className="mb-4 flex justify-end print:hidden">
-        <button onClick={() => window.print()} className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900">Print receipt</button>
+        <PrintButton />
       </div>
 
       <div id="receipt" className="mx-auto max-w-2xl rounded-xl border border-zinc-200 bg-white p-8 shadow-sm print:border-none print:shadow-none dark:border-zinc-800 dark:bg-zinc-950">

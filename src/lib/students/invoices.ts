@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 export async function getStudentInvoices(studentId: string) {
   const supabase = await createClient()

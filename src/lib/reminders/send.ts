@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { ActionResult } from '@/lib/types'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 export async function sendRemindersForInvoice(invoiceId: string): Promise<ActionResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -43,4 +45,9 @@ export async function sendRemindersForInvoice(invoiceId: string): Promise<Action
 
   revalidatePath(`/invoices/${invoiceId}`)
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'sendRemindersForInvoice', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send reminders' }
+  }
 }

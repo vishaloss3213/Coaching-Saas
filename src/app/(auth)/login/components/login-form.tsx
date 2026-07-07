@@ -1,37 +1,41 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { login } from '@/lib/auth/actions'
 
 export function LoginForm() {
   const router = useRouter()
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
-    setError('')
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
 
     try {
-      const formData = new FormData(e.currentTarget)
-      const result = await login(null, formData)
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.get('email'),
+          password: formData.get('password'),
+        }),
+      })
 
-      if (!result) {
-        setLoading(false)
-        return
-      }
+      const data = await res.json()
 
-      if ('error' in result) {
-        setError(result.error)
-        setLoading(false)
+      if (!res.ok) {
+        setError(data.error || 'Login failed')
         return
       }
 
       router.push('/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
       setLoading(false)
     }
   }

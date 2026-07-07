@@ -37,6 +37,8 @@ export default async function DashboardLayout({
         .single()
     : { data: null }
 
+  const isOwner = profile?.role === 'owner'
+
   return (
     <div className="min-h-screen flex">
       <aside className="flex w-56 flex-col border-r border-zinc-200 dark:border-zinc-800">
@@ -53,6 +55,14 @@ export default async function DashboardLayout({
               {link.label}
             </Link>
           ))}
+          {isOwner && (
+            <Link
+              href="/audit"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+            >
+              Audit
+            </Link>
+          )}
         </nav>
         <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
           <p className="mb-1 text-xs text-zinc-500">{profile?.full_name}</p>

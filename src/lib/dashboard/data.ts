@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-export async function getDashboardData() {
-  const supabase = await createClient()
+export async function getDashboardData(supabaseArg?: SupabaseClient) {
+  const supabase = supabaseArg || await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 

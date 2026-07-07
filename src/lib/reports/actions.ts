@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 export async function getReportsData() {
   const supabase = await createClient()

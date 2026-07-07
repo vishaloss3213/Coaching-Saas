@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from '@/lib/dashboard/data'
 import { redirect } from 'next/navigation'
 import { BulkActionSection } from './bulk-actions'
 
 export default async function DashboardPage() {
-  const data = await getDashboardData()
+  const supabase = await createClient()
+  const data = await getDashboardData(supabase)
   if (!data) redirect('/login')
 
   return (

@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 type MsgResult = { error: string; success?: never } | { success: string; error?: never } | null
 
 export async function sendDailySummary(message: string): Promise<MsgResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id, id').eq('id', user.id).single()
@@ -28,10 +30,16 @@ export async function sendDailySummary(message: string): Promise<MsgResult> {
   revalidatePath('/reports')
   revalidatePath('/communication')
   return { success: 'Summary sent' }
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'sendDailySummary', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send summary' }
+  }
 }
 
 export async function sendDefaulterAlerts(): Promise<MsgResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -64,10 +72,16 @@ export async function sendDefaulterAlerts(): Promise<MsgResult> {
   revalidatePath('/reports')
   revalidatePath('/communication')
   return { success: `${logs.length} defaulter alert(s) sent` }
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'sendDefaulterAlerts', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send alert' }
+  }
 }
 
 export async function sendBatchPerformanceNote(_prev: MsgResult, formData: FormData): Promise<MsgResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -105,10 +119,16 @@ export async function sendBatchPerformanceNote(_prev: MsgResult, formData: FormD
 
   revalidatePath('/communication')
   return { success: `${logs.length} note(s) sent for ${batch.name}` }
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'sendBatchPerformanceNote', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send note' }
+  }
 }
 
 export async function sendBatchUpdate(_prev: MsgResult, formData: FormData): Promise<MsgResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -144,10 +164,16 @@ export async function sendBatchUpdate(_prev: MsgResult, formData: FormData): Pro
 
   revalidatePath('/communication')
   return { success: `${logs.length} message(s) sent to batch` }
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'sendBatchUpdate', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send update' }
+  }
 }
 
 export async function sendParentAlert(_prev: MsgResult, formData: FormData): Promise<MsgResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -182,6 +208,11 @@ export async function sendParentAlert(_prev: MsgResult, formData: FormData): Pro
 
   revalidatePath('/communication')
   return { success: `${logs.length} alert(s) sent` }
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'sendParentAlert', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send alert' }
+  }
 }
 
 export async function getBatchesWithStudents() {
@@ -200,7 +231,8 @@ export async function getBatchesWithStudents() {
 }
 
 export async function quickSendDailySummary(): Promise<MsgResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id, id').eq('id', user.id).single()
@@ -271,4 +303,9 @@ export async function quickSendDailySummary(): Promise<MsgResult> {
   revalidatePath('/reports')
   revalidatePath('/communication')
   return { success: 'Daily summary sent' }
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'quickSendDailySummary', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to send summary' }
+  }
 }

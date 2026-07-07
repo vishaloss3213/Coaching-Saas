@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 export async function getBatchWithStudents(id: string) {
   const supabase = await createClient()
@@ -58,7 +59,8 @@ export async function getAvailableStudents(batchId: string) {
 }
 
 export async function enrollStudents(batchId: string, _prev: { error: string } | null, formData: FormData): Promise<{ error: string } | null> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const studentIds = formData.getAll('student_ids') as string[]
 
   if (studentIds.length === 0) return { error: 'Select at least one student' }
@@ -73,10 +75,16 @@ export async function enrollStudents(batchId: string, _prev: { error: string } |
 
   revalidatePath(`/batches/${batchId}`)
   redirect(`/batches/${batchId}`)
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'enrollStudents', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to enroll students' }
+  }
 }
 
 export async function removeStudent(batchId: string, studentId: string): Promise<{ error: string } | null> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { error } = await supabase
     .from('student_batches')
     .update({ active: false, left_at: new Date().toISOString() })
@@ -88,4 +96,9 @@ export async function removeStudent(batchId: string, studentId: string): Promise
 
   revalidatePath(`/batches/${batchId}`)
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'removeStudent', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to remove student' }
+  }
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { ActionResult } from '@/lib/types'
+import { logError, isKnownNextError } from '@/lib/error-logger'
 
 export async function getInvoices() {
   const supabase = await createClient()
@@ -82,7 +83,8 @@ function getPeriodEnd(cycleType: string, periodStart: string): string {
 }
 
 export async function generateInvoices(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -118,10 +120,16 @@ export async function generateInvoices(_prev: ActionResult, formData: FormData):
   revalidatePath('/invoices')
   redirect('/invoices')
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'generateInvoices', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to generate invoices' }
+  }
 }
 
 export async function recordPayment(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const invoiceId = formData.get('invoice_id') as string
   const studentId = formData.get('student_id') as string
   const amount = parseFloat(formData.get('amount') as string)
@@ -151,6 +159,11 @@ export async function recordPayment(_prev: ActionResult, formData: FormData): Pr
   revalidatePath(`/invoices/${invoiceId}`)
   redirect(`/invoices/${invoiceId}`)
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'recordPayment', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to record payment' }
+  }
 }
 
 export async function getBatchAndPlans(batchId: string) {
@@ -174,7 +187,8 @@ export async function getBatchAndPlans(batchId: string) {
 }
 
 export async function generateBatchInvoices(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
   const { data: profile } = await supabase.from('profiles').select('center_id').eq('id', user.id).single()
@@ -218,6 +232,11 @@ export async function generateBatchInvoices(_prev: ActionResult, formData: FormD
   revalidatePath('/invoices')
   redirect('/invoices')
   return null
+  } catch (err) {
+    if (isKnownNextError(err)) throw err
+    await logError({ source: 'server_action', name: 'generateBatchInvoices', error: err })
+    return { error: err instanceof Error ? err.message : 'Failed to generate batch invoices' }
+  }
 }
 
 export async function getInvoiceReceipt(id: string) {
